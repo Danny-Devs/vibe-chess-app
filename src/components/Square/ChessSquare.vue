@@ -125,8 +125,8 @@ const showFileLabel = computed(() => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 28%;
-  height: 28%;
+  width: 32%;
+  height: 32%;
   background-color: rgba(75, 175, 80, 0.9);
   border-radius: 50%;
   z-index: 5;

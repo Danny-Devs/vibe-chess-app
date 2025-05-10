@@ -84,11 +84,6 @@ function isValidMoveForSquare(square: Square): boolean {
   const gameActive = gameStore.gameStarted
   const validMove = gameStore.isValidMoveTarget(square)
 
-  // Only log when there's a selected piece, to avoid console spam
-  if (gameStore.selectedPieceId !== null && validMove) {
-    console.log(`Valid move for square ${square}: ${validMove}`)
-  }
-
   return showMoves && gameActive && validMove
 }
 
@@ -113,23 +108,13 @@ const tooltipVisible = ref(false)
 // Watch for selection changes to make sure the UI updates
 watch(
   () => gameStore.selectedPieceId,
-  (newValue) => {
-    if (newValue) {
-      console.log(`Board watching: Piece selected: ${newValue}`)
-    } else {
-      console.log('Board watching: No piece selected')
-    }
-  },
+  (newValue) => {},
 )
 
 // Watch for available moves changes
 watch(
   () => gameStore.availableMoves,
-  (newMoves) => {
-    if (newMoves.length > 0) {
-      console.log(`Board watching: ${newMoves.length} moves available`)
-    }
-  },
+  (newMoves) => {},
 )
 
 // Watch for changes in the validation result
@@ -198,7 +183,7 @@ watch(
   background-color: rgba(0, 0, 0, 0.7);
   color: white;
   padding: 1rem 2rem;
-  border-radius: 8px;
+  border-radius: 0;
   font-weight: bold;
   font-size: 1.2rem;
   transition: transform 0.2s;
@@ -237,7 +222,7 @@ watch(
   left: 50%;
   transform: translateX(-50%);
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: 0;
   font-size: 14px;
   color: white;
   z-index: 100;

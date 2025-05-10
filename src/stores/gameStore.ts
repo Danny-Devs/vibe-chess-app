@@ -96,9 +96,6 @@ export const useGameStore = defineStore('game', () => {
         selectedPieceId.value = pieceId
         // Generate available moves for the selected piece
         availableMoves.value = generateMovesForPiece(piece)
-        console.log(
-          `Selected piece ${piece.type} with ${availableMoves.value.length} available moves`,
-        )
       } else {
         // If piece is null or not the current player's color, clear selection
         selectedPieceId.value = null
@@ -119,11 +116,6 @@ export const useGameStore = defineStore('game', () => {
 
     // Check if this square is in the available moves for the selected piece
     const isValid = availableMoves.value.some((move) => move.to === square)
-
-    // Debug logging
-    if (isValid) {
-      console.log(`Valid move from ${selectedPiece.square} to ${square}`)
-    }
 
     return isValid
   }
