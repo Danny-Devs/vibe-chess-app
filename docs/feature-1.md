@@ -8,20 +8,9 @@ Create the foundation of the chess application by implementing a responsive, vis
 
 ### Project Setup
 
-1. Initialize a new Vue 3 + TypeScript project using Vite:
-```bash
-npm create vite@latest chess-app -- --template vue-ts
-cd chess-app
-npm install
-```
+1. The project has already been setup.
 
-2. Install necessary dependencies:
-```bash
-npm install gsap
-npm install vitest --save-dev
-```
-
-3. Set up the folder structure:
+2. Set up the folder structure:
 ```
 src/
 ├── components/
