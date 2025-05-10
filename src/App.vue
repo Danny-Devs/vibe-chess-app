@@ -31,7 +31,6 @@ const handleStartNewGame = () => {
             <button @click="handleStartNewGame">New Game</button>
             <button @click="gameStore.handleUndoMove" :disabled="!gameStore.canUndo">Undo</button>
             <button @click="gameStore.handleRedoMove" :disabled="!gameStore.canRedo">Redo</button>
-            <button @click="gameStore.toggleBoardOrientation">Flip Board</button>
             <label class="control-option">
               <input type="checkbox" v-model="gameStore.config.showAvailableMoves" />
               Show Available Moves
@@ -51,19 +50,31 @@ const handleStartNewGame = () => {
                 No moves yet
               </div>
               <div v-else class="history-moves">
-                <template v-for="(move, index) in gameStore.history.moves" :key="index">
-                  <div class="history-item">
-                    <span v-if="index % 2 === 0" class="move-number"
-                      >{{ Math.floor(index / 2) + 1 }}.</span
+                <!-- Group moves by turn number (one white move + one black move per line) -->
+                <div
+                  v-for="turnNumber in Math.ceil(gameStore.history.moves.length / 2)"
+                  :key="turnNumber"
+                  class="history-turn"
+                >
+                  <!-- Turn number -->
+                  <div class="move-number">{{ turnNumber }}.</div>
+
+                  <div class="move-pair">
+                    <!-- White's move (always exists) -->
+                    <div class="move-text white-move">
+                      {{ gameStore.history.moves[(turnNumber - 1) * 2].notation }}
+                    </div>
+
+                    <!-- Black's move (may not exist in the last turn) -->
+                    <div
+                      v-if="(turnNumber - 1) * 2 + 1 < gameStore.history.moves.length"
+                      class="move-text black-move"
                     >
-                    <span
-                      class="move-text"
-                      :class="{ 'white-move': index % 2 === 0, 'black-move': index % 2 === 1 }"
-                    >
-                      {{ move.notation }}
-                    </span>
+                      {{ gameStore.history.moves[(turnNumber - 1) * 2 + 1].notation }}
+                    </div>
+                    <div v-else class="move-text placeholder"></div>
                   </div>
-                </template>
+                </div>
               </div>
             </div>
           </div>
@@ -235,23 +246,33 @@ body {
   padding: 0.5rem;
 }
 
-.history-item {
+.history-turn {
   display: flex;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.5rem;
   align-items: flex-start;
+  line-height: 1.5;
 }
 
 .move-number {
   font-weight: bold;
-  margin-right: 0.5rem;
   color: #555;
-  min-width: 1.5rem;
+  min-width: 2rem;
+  text-align: right;
+  padding-right: 0.5rem;
+}
+
+.move-pair {
+  display: flex;
+  flex: 1;
 }
 
 .move-text {
   font-family: 'Roboto Mono', monospace;
   font-size: 1rem;
   font-weight: 500;
+  min-width: 3.5rem;
+  padding: 0 0.5rem;
+  cursor: default;
 }
 
 .white-move {
@@ -260,6 +281,11 @@ body {
 
 .black-move {
   color: #333;
+}
+
+.placeholder {
+  /* Empty space for missing black move */
+  min-width: 3.5rem;
 }
 
 .history-placeholder {
@@ -334,4 +360,10 @@ body {
     font-size: 0.9rem;
   }
 }
+
+/* Remove the following rule so all disabled buttons use the same style */
+/* .flip-board-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+} */
 </style>

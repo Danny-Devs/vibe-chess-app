@@ -6,7 +6,6 @@
       { 'valid-move-target': isValidMoveTarget },
       { 'has-feedback': hasFeedback },
       feedbackClass,
-      { 'square-flipped': boardFlipped },
     ]"
     :data-square="square"
     @click="$emit('click')"
@@ -33,13 +32,11 @@ interface Props {
   color: SquareColor
   showCoordinates?: boolean
   isValidMoveTarget?: boolean
-  boardFlipped?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showCoordinates: true,
   isValidMoveTarget: false,
-  boardFlipped: false,
 })
 
 defineEmits(['click'])
@@ -60,16 +57,14 @@ const feedbackClass = computed(() => {
   return ''
 })
 
-// Show rank labels only on the a-file (leftmost column) or h-file when flipped
+// Show rank labels on the a-file (leftmost column)
 const showRankLabel = computed(() => {
-  const fileToShow = gameStore.config.flipped ? 'h' : 'a'
-  return props.square[0] === fileToShow
+  return props.square[0] === 'a'
 })
 
-// Show file labels only on the 1-rank (bottom row) or 8-rank when flipped
+// Show file labels on the 1-rank (bottom row)
 const showFileLabel = computed(() => {
-  const rankToShow = gameStore.config.flipped ? '8' : '1'
-  return props.square[1] === rankToShow
+  return props.square[1] === '1'
 })
 </script>
 
@@ -82,10 +77,6 @@ const showFileLabel = computed(() => {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-}
-
-.square-flipped {
-  transform: rotate(180deg);
 }
 
 .light {

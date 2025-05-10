@@ -1,7 +1,5 @@
 // Initial game configuration
 export const INITIAL_GAME_CONFIG = {
-  flipped: false, // Whether the board is flipped (black at bottom)
-  squaresFlipped: false, // Whether the square colors are flipped
   showAvailableMoves: true, // Whether to show available moves for selected piece
   autoQueen: true, // Automatically promote pawns to queens
 }

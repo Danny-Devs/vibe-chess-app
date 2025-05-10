@@ -1,4 +1,4 @@
-import type { Square, File, Rank, Move, Piece, PieceType } from '../types'
+import type { Square, File, Rank, Move, Piece, PieceType, GameStatus } from '../types'
 import { FILES, RANKS } from '../constants/boardConfig'
 
 /**
@@ -31,7 +31,7 @@ export function squareToIndices(square: Square): [number, number] {
 /**
  * Generates the Standard Algebraic Notation (SAN) for a move
  */
-export function generateMoveNotation(move: Move, pieces: Piece[]): string {
+export function generateMoveNotation(move: Move, pieces: Piece[], gameStatus?: GameStatus): string {
   const { piece, from, to, type, capturedPiece, promotionPiece } = move
 
   // Special case for castling
@@ -88,7 +88,12 @@ export function generateMoveNotation(move: Move, pieces: Piece[]): string {
     notation += '=' + promotionPiece.charAt(0).toUpperCase()
   }
 
-  // Check and checkmate indicators will be added later
+  // Add check and checkmate indicators
+  if (gameStatus === 'check') {
+    notation += '+'
+  } else if (gameStatus === 'checkmate') {
+    notation += '#'
+  }
 
   return notation
 }

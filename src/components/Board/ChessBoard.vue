@@ -4,7 +4,6 @@
       class="chess-board"
       :class="{
         'game-inactive': !gameStore.gameStarted,
-        'board-flipped': gameStore.config.flipped,
       }"
     >
       <!-- Board squares -->
@@ -12,10 +11,9 @@
         v-for="square in boardSquares"
         :key="square"
         :square="square"
-        :color="getSquareColor(square[0], square[1], gameStore.config.squaresFlipped)"
+        :color="getSquareColor(square[0], square[1])"
         :showCoordinates="showCoordinates"
         :isValidMoveTarget="isValidMoveForSquare(square)"
-        :boardFlipped="gameStore.config.flipped"
         @click="gameStore.handleSquareClick(square)"
       />
 
@@ -31,8 +29,7 @@
             :piece="piece"
             :isSelected="piece.id === gameStore.selectedPieceId"
             :isInCheck="piece.id === gameStore.check.kingId"
-            :boardFlipped="gameStore.config.flipped"
-            @click.stop="gameStore.selectPiece(piece.id)"
+            @click.stop="gameStore.selectPiece(piece.id, $event)"
           />
         </div>
       </div>
@@ -70,7 +67,7 @@ const props = withDefaults(defineProps<Props>(), {
   showCoordinates: true,
 })
 
-const { generateBoardSquares } = useBoardUtils()
+const { generateBoardSquares, getSquareColor } = useBoardUtils()
 const boardSquares = generateBoardSquares
 
 // Get the game store from Pinia
@@ -101,28 +98,13 @@ function getPieceGridPosition(square: Square) {
   const rank = square.charAt(1)
 
   // Calculate 1-based grid positions
-  let fileIndex = 'abcdefgh'.indexOf(file) + 1
-  let rankIndex = '87654321'.indexOf(rank) + 1
-
-  // When the board is flipped, we need to adjust coordinates
-  if (gameStore.config.flipped) {
-    fileIndex = 9 - fileIndex
-    rankIndex = 9 - rankIndex
-  }
+  const fileIndex = 'abcdefgh'.indexOf(file) + 1
+  const rankIndex = '87654321'.indexOf(rank) + 1
 
   return {
     gridColumn: fileIndex,
     gridRow: rankIndex,
   }
-}
-
-// Modified getSquareColor function that takes flipped state into account
-function getSquareColor(file: string, rank: string, flipped: boolean): SquareColor {
-  const fileIndex = 'abcdefgh'.indexOf(file)
-  const rankIndex = '87654321'.indexOf(rank)
-
-  const isLight = (fileIndex + rankIndex) % 2 === 1
-  return flipped ? (isLight ? 'dark' : 'light') : isLight ? 'light' : 'dark'
 }
 
 // Track the last validation reason for tooltip display
@@ -186,11 +168,6 @@ watch(
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   position: relative;
   overflow: hidden;
-}
-
-/* Board flipping */
-.board-flipped {
-  transform: rotate(180deg);
 }
 
 /* Game inactive styling */

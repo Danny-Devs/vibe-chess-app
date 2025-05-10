@@ -405,28 +405,6 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
-  function toggleBoardOrientation() {
-    // Toggle both the board orientation and square colors
-    config.value = {
-      ...config.value,
-      flipped: !config.value.flipped,
-      squaresFlipped: !config.value.squaresFlipped,
-    }
-
-    // When flipping the board, we don't change the internal pieces representation
-    // The UI will handle the rendering of the flipped board
-    // This approach keeps the game state consistent and simpler to manage
-
-    // If a piece is selected, recompute available moves to ensure the UI updates
-    if (selectedPieceId.value) {
-      const selectedPiece = pieces.value.find((p) => p.id === selectedPieceId.value)
-      if (selectedPiece) {
-        availableMoves.value = generateMovesForPiece(selectedPiece)
-        console.log(`Recomputed moves after flip: ${availableMoves.value.length} moves available`)
-      }
-    }
-  }
-
   return {
     // State
     pieces,
@@ -456,7 +434,6 @@ export const useGameStore = defineStore('game', () => {
     handleUndoMove,
     handleRedoMove,
     handleSquareClick,
-    toggleBoardOrientation,
     clearValidationFeedback,
   }
 })

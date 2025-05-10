@@ -1,12 +1,7 @@
 <template>
   <div
     class="chess-piece"
-    :class="[
-      `piece-${piece.color}`,
-      { selected: isSelected },
-      { 'in-check': isInCheck },
-      { flipped: boardFlipped },
-    ]"
+    :class="[`piece-${piece.color}`, { selected: isSelected }, { 'in-check': isInCheck }]"
     :data-piece-id="piece.id"
     @click.stop="$emit('click', $event)"
   >
@@ -23,13 +18,11 @@ interface Props {
   piece: Piece
   isSelected?: boolean
   isInCheck?: boolean
-  boardFlipped?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
   isInCheck: false,
-  boardFlipped: false,
 })
 
 defineEmits(['click'])
@@ -121,19 +114,6 @@ const getPieceLetter = (type: PieceType): string => {
   background-color: rgba(255, 50, 50, 0.3);
   box-shadow: 0 0 10px 2px rgba(255, 0, 0, 0.6);
   animation: pulse-check 1.5s infinite;
-}
-
-/* Handle flipped board */
-.chess-piece.flipped {
-  transform: rotate(180deg);
-}
-
-.chess-piece.flipped:hover {
-  transform: rotate(180deg) scale(1.1);
-}
-
-.chess-piece.flipped.selected {
-  transform: rotate(180deg) scale(1.15);
 }
 
 @keyframes pulse-check {

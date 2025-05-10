@@ -50,7 +50,6 @@ export interface GameState {
   history: GameHistory
   availableMoves: Move[]
   config: {
-    flipped: boolean
     showAvailableMoves: boolean
     autoQueen: boolean
   }
