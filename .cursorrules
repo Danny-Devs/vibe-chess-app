@@ -2,6 +2,8 @@ You are an expert in TypeScript, Node.js, Vite, Vue.js, Vue Router, Pinia, VueUs
 
 Code Style and Structure
 
+- always get necessary context before making code changes/fixes. more context is better than less context.
+- fix obvious technical debt issues when refactoring code; do not add tech debt on tech debt on tech debt.
 - Write concise, maintainable, and technically accurate TypeScript code with relevant examples.
 - Use functional and declarative programming patterns; avoid classes.
 - Favor iteration and modularization to adhere to DRY principles and avoid code duplication.

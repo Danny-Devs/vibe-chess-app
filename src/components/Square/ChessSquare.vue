@@ -6,6 +6,7 @@
       { 'valid-move-target': isValidMoveTarget },
       { 'has-feedback': hasFeedback },
       feedbackClass,
+      { 'square-flipped': boardFlipped },
     ]"
     :data-square="square"
     @click="$emit('click')"
@@ -17,6 +18,7 @@
       {{ square[0] }}
     </div>
     <div v-if="hasFeedback" class="feedback-animation"></div>
+    <div v-if="isValidMoveTarget" class="valid-move-indicator"></div>
   </div>
 </template>
 
@@ -31,11 +33,13 @@ interface Props {
   color: SquareColor
   showCoordinates?: boolean
   isValidMoveTarget?: boolean
+  boardFlipped?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showCoordinates: true,
   isValidMoveTarget: false,
+  boardFlipped: false,
 })
 
 defineEmits(['click'])
@@ -80,6 +84,10 @@ const showFileLabel = computed(() => {
   cursor: pointer;
 }
 
+.square-flipped {
+  transform: rotate(180deg);
+}
+
 .light {
   background-color: var(--light-square-color, #f0d9b5);
 }
@@ -114,21 +122,39 @@ const showFileLabel = computed(() => {
   color: rgba(255, 255, 255, 0.95);
 }
 
+/* Valid move target styling */
 .valid-move-target {
   position: relative;
+  cursor: pointer;
 }
 
-.valid-move-target::before {
-  content: '';
+/* Valid move indicator styling - ENHANCED */
+.valid-move-indicator {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 20%;
-  height: 20%;
-  background-color: rgba(75, 175, 80, 0.6);
+  width: 28%;
+  height: 28%;
+  background-color: rgba(75, 175, 80, 0.9);
   border-radius: 50%;
   z-index: 5;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.8;
+  }
 }
 
 /* Feedback styles */

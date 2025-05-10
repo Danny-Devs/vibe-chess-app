@@ -4,11 +4,11 @@
     :class="[
       `piece-${piece.color}`,
       { selected: isSelected },
-      { 'in-check': isInCheck }
+      { 'in-check': isInCheck },
+      { flipped: boardFlipped },
     ]"
     :data-piece-id="piece.id"
-    :style="pieceStyle"
-    @click="$emit('click')"
+    @click.stop="$emit('click', $event)"
   >
     {{ getPieceLetter(piece.type) }}
   </div>
@@ -23,11 +23,13 @@ interface Props {
   piece: Piece
   isSelected?: boolean
   isInCheck?: boolean
+  boardFlipped?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
   isInCheck: false,
+  boardFlipped: false,
 })
 
 defineEmits(['click'])
@@ -44,21 +46,6 @@ const getPieceLetter = (type: PieceType): string => {
   }
   return letters[type]
 }
-
-// Calculate the grid position based on the piece's square
-const pieceStyle = computed(() => {
-  const file = props.piece.square.charAt(0)
-  const rank = props.piece.square.charAt(1)
-
-  // Calculate grid positions (1-based)
-  const fileIndex = FILES.indexOf(file as any) + 1
-  const rankIndex = RANKS.indexOf(rank as any) + 1
-
-  return {
-    gridColumn: fileIndex,
-    gridRow: rankIndex,
-  }
-})
 </script>
 
 <style scoped>
@@ -74,6 +61,7 @@ const pieceStyle = computed(() => {
   user-select: none;
   z-index: 10;
   position: relative;
+  transition: all 0.2s ease;
 }
 
 .chess-piece::before {
@@ -83,6 +71,7 @@ const pieceStyle = computed(() => {
   height: 60%;
   border-radius: 50%;
   z-index: -1;
+  transition: all 0.2s ease;
 }
 
 /* White pieces */
@@ -109,10 +98,17 @@ const pieceStyle = computed(() => {
   background-color: rgba(0, 0, 0, 0.08);
 }
 
-/* Selected piece styling */
+/* Selected piece styling - ENHANCED */
+.selected {
+  transform: scale(1.15);
+  z-index: 20;
+}
+
 .selected::before {
-  background-color: rgba(255, 255, 0, 0.25);
-  box-shadow: 0 0 8px 2px rgba(255, 215, 0, 0.5);
+  background-color: rgba(120, 255, 120, 0.55); /* light green */
+  width: 60%;
+  height: 60%;
+  box-shadow: none;
 }
 
 /* Chess piece hover effect */
@@ -125,6 +121,19 @@ const pieceStyle = computed(() => {
   background-color: rgba(255, 50, 50, 0.3);
   box-shadow: 0 0 10px 2px rgba(255, 0, 0, 0.6);
   animation: pulse-check 1.5s infinite;
+}
+
+/* Handle flipped board */
+.chess-piece.flipped {
+  transform: rotate(180deg);
+}
+
+.chess-piece.flipped:hover {
+  transform: rotate(180deg) scale(1.1);
+}
+
+.chess-piece.flipped.selected {
+  transform: rotate(180deg) scale(1.15);
 }
 
 @keyframes pulse-check {

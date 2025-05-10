@@ -82,20 +82,29 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function selectPiece(pieceId: string | null) {
+    // Clear validation feedback first
+    clearValidationFeedback()
+
     // Can only select pieces of the current player's color during active game
     if (pieceId !== null && status.value === 'active') {
       const piece = pieces.value.find((p) => p.id === pieceId)
       if (piece && piece.color === currentTurn.value) {
         selectedPieceId.value = pieceId
+        // Generate available moves for the selected piece
         availableMoves.value = generateMovesForPiece(piece)
+        console.log(
+          `Selected piece ${piece.type} with ${availableMoves.value.length} available moves`,
+        )
+      } else {
+        // If piece is null or not the current player's color, clear selection
+        selectedPieceId.value = null
+        availableMoves.value = []
       }
     } else {
+      // Clear selection
       selectedPieceId.value = null
       availableMoves.value = []
     }
-
-    // Clear validation feedback when selecting a piece
-    clearValidationFeedback()
   }
 
   function isValidMoveTarget(square: Square): boolean {
@@ -104,7 +113,15 @@ export const useGameStore = defineStore('game', () => {
     const selectedPiece = pieces.value.find((p) => p.id === selectedPieceId.value)
     if (!selectedPiece) return false
 
-    return availableMoves.value.some((move) => move.to === square)
+    // Check if this square is in the available moves for the selected piece
+    const isValid = availableMoves.value.some((move) => move.to === square)
+
+    // Debug logging
+    if (isValid) {
+      console.log(`Valid move from ${selectedPiece.square} to ${square}`)
+    }
+
+    return isValid
   }
 
   function validateMove(from: Square, to: Square): ValidationResult {
@@ -400,9 +417,14 @@ export const useGameStore = defineStore('game', () => {
     // The UI will handle the rendering of the flipped board
     // This approach keeps the game state consistent and simpler to manage
 
-    // We do need to clear any selection to avoid confusion
-    selectedPieceId.value = null
-    availableMoves.value = []
+    // If a piece is selected, recompute available moves to ensure the UI updates
+    if (selectedPieceId.value) {
+      const selectedPiece = pieces.value.find((p) => p.id === selectedPieceId.value)
+      if (selectedPiece) {
+        availableMoves.value = generateMovesForPiece(selectedPiece)
+        console.log(`Recomputed moves after flip: ${availableMoves.value.length} moves available`)
+      }
+    }
   }
 
   return {

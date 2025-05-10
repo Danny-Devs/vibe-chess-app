@@ -28,9 +28,7 @@ const handleStartNewGame = () => {
         <div class="side-panel left-panel">
           <div class="game-status">{{ gameStore.statusMessage }}</div>
           <div class="game-controls">
-            <button @click="handleStartNewGame">
-              {{ gameStore.gameStarted ? 'New Game' : 'Start Game' }}
-            </button>
+            <button @click="handleStartNewGame">New Game</button>
             <button @click="gameStore.handleUndoMove" :disabled="!gameStore.canUndo">Undo</button>
             <button @click="gameStore.handleRedoMove" :disabled="!gameStore.canRedo">Redo</button>
             <button @click="gameStore.toggleBoardOrientation">Flip Board</button>
@@ -53,27 +51,19 @@ const handleStartNewGame = () => {
                 No moves yet
               </div>
               <div v-else class="history-moves">
-                <!-- Group moves by pairs (white and black) -->
-                <div
-                  v-for="index in Math.ceil(gameStore.history.moves.length / 2)"
-                  :key="index"
-                  class="move-pair"
-                >
-                  <span class="move-number">{{ index }}.</span>
-                  <div class="move-content">
-                    <!-- White's move -->
-                    <span class="move-text white-move">
-                      {{ gameStore.history.moves[(index - 1) * 2]?.notation || '' }}
-                    </span>
-                    <!-- Black's move if exists -->
-                    <span
-                      v-if="(index - 1) * 2 + 1 < gameStore.history.moves.length"
-                      class="move-text black-move"
+                <template v-for="(move, index) in gameStore.history.moves" :key="index">
+                  <div class="history-item">
+                    <span v-if="index % 2 === 0" class="move-number"
+                      >{{ Math.floor(index / 2) + 1 }}.</span
                     >
-                      {{ gameStore.history.moves[(index - 1) * 2 + 1]?.notation || '' }}
+                    <span
+                      class="move-text"
+                      :class="{ 'white-move': index % 2 === 0, 'black-move': index % 2 === 1 }"
+                    >
+                      {{ move.notation }}
                     </span>
                   </div>
-                </div>
+                </template>
               </div>
             </div>
           </div>
@@ -245,7 +235,7 @@ body {
   padding: 0.5rem;
 }
 
-.move-pair {
+.history-item {
   display: flex;
   margin-bottom: 0.8rem;
   align-items: flex-start;
@@ -256,11 +246,6 @@ body {
   margin-right: 0.5rem;
   color: #555;
   min-width: 1.5rem;
-}
-
-.move-content {
-  display: flex;
-  gap: 0.8rem;
 }
 
 .move-text {
