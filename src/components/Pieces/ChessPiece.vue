@@ -1,9 +1,15 @@
 <template>
   <div
     class="chess-piece"
-    :class="[`piece-${piece.color}`, { selected: isSelected }, { 'in-check': isInCheck }]"
+    :class="[
+      `piece-${piece.color}`,
+      { selected: isSelected },
+      { 'in-check': isInCheck },
+      { 'is-dragging': isDragging },
+    ]"
     :data-piece-id="piece.id"
     @click.stop="$emit('click', $event)"
+    @mousedown.stop="$emit('mousedown', $event)"
   >
     {{ getPieceLetter(piece.type) }}
   </div>
@@ -18,14 +24,16 @@ interface Props {
   piece: Piece
   isSelected?: boolean
   isInCheck?: boolean
+  isDragging?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
   isInCheck: false,
+  isDragging: false,
 })
 
-defineEmits(['click'])
+defineEmits(['click', 'mousedown'])
 
 // Get the letter representation of each piece type
 const getPieceLetter = (type: PieceType): string => {
@@ -102,6 +110,16 @@ const getPieceLetter = (type: PieceType): string => {
   width: 60%;
   height: 60%;
   box-shadow: none;
+}
+
+/* Dragging piece style */
+.is-dragging {
+  opacity: 0.9;
+  z-index: 50;
+}
+
+.is-dragging::before {
+  display: none; /* Hide the background completely */
 }
 
 /* Chess piece hover effect */

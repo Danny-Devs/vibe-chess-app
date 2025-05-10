@@ -4,6 +4,7 @@
     :class="[
       color,
       { 'valid-move-target': isValidMoveTarget },
+      { 'active-drop-target': isDropTarget },
       { 'has-feedback': hasFeedback },
       feedbackClass,
     ]"
@@ -32,11 +33,13 @@ interface Props {
   color: SquareColor
   showCoordinates?: boolean
   isValidMoveTarget?: boolean
+  isDropTarget?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showCoordinates: true,
   isValidMoveTarget: false,
+  isDropTarget: false,
 })
 
 defineEmits(['click'])
@@ -119,6 +122,14 @@ const showFileLabel = computed(() => {
   cursor: pointer;
 }
 
+/* Active drop target styling */
+.active-drop-target .valid-move-indicator {
+  transform: translate(-50%, -50%) scale(1.3);
+  opacity: 1;
+  background-color: rgba(100, 255, 100, 0.95);
+  box-shadow: none;
+}
+
 /* Valid move indicator styling - ENHANCED */
 .valid-move-indicator {
   position: absolute;
@@ -131,6 +142,9 @@ const showFileLabel = computed(() => {
   border-radius: 50%;
   z-index: 5;
   animation: pulse 1.5s infinite ease-in-out;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
 }
 
 @keyframes pulse {
