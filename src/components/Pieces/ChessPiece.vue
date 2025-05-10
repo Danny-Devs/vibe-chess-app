@@ -1,7 +1,11 @@
 <template>
   <div
     class="chess-piece"
-    :class="[`piece-${piece.color}`, { selected: isSelected }, { 'in-check': isInCheck }]"
+    :class="[
+      `piece-${piece.color}`,
+      { selected: isSelected },
+      { 'in-check': isInCheck }
+    ]"
     :data-piece-id="piece.id"
     :style="pieceStyle"
     @click="$emit('click')"
@@ -18,13 +22,11 @@ import { FILES, RANKS } from '../../constants/boardConfig'
 interface Props {
   piece: Piece
   isSelected?: boolean
-  boardFlipped?: boolean
   isInCheck?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
-  boardFlipped: false,
   isInCheck: false,
 })
 
@@ -52,13 +54,9 @@ const pieceStyle = computed(() => {
   const fileIndex = FILES.indexOf(file as any) + 1
   const rankIndex = RANKS.indexOf(rank as any) + 1
 
-  // When the board is flipped, we need to adjust coordinates
-  const adjustedFileIndex = props.boardFlipped ? 9 - fileIndex : fileIndex
-  const adjustedRankIndex = props.boardFlipped ? 9 - rankIndex : rankIndex
-
   return {
-    gridColumn: adjustedFileIndex,
-    gridRow: adjustedRankIndex,
+    gridColumn: fileIndex,
+    gridRow: rankIndex,
   }
 })
 </script>
@@ -120,7 +118,6 @@ const pieceStyle = computed(() => {
 /* Chess piece hover effect */
 .chess-piece:hover {
   transform: scale(1.1);
-  z-index: 20;
 }
 
 /* Check indicator */

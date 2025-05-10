@@ -1,9 +1,9 @@
 <template>
   <div class="chess-board-container">
-    <div class="chess-board" :class="{ 'board-flipped': gameStore.config.flipped }">
+    <div class="chess-board">
       <!-- Board squares -->
       <ChessSquare
-        v-for="square in boardSquares"
+        v-for="square in flippedBoardSquares"
         :key="square"
         :square="square"
         :color="getSquareColor(square[0], square[1], gameStore.config.squaresFlipped)"
@@ -16,15 +16,19 @@
 
       <!-- Chess pieces -->
       <div class="pieces-container">
-        <ChessPiece
+        <div
           v-for="piece in gameStore.pieces"
           :key="piece.id"
-          :piece="piece"
-          :isSelected="piece.id === gameStore.selectedPieceId"
-          :boardFlipped="gameStore.config.flipped"
-          :isInCheck="piece.id === gameStore.check.kingId"
-          @click="gameStore.selectPiece(piece.id)"
-        />
+          :style="getPieceGridPosition(piece.square)"
+          class="piece-wrapper"
+        >
+          <ChessPiece
+            :piece="piece"
+            :isSelected="piece.id === gameStore.selectedPieceId"
+            :isInCheck="piece.id === gameStore.check.kingId"
+            @click="gameStore.selectPiece(piece.id)"
+          />
+        </div>
       </div>
 
       <!-- Validation feedback tooltip -->
@@ -60,6 +64,38 @@ const boardSquares = generateBoardSquares
 
 // Get the game store from Pinia
 const gameStore = useGameStore()
+
+// Compute board squares in correct order based on flipped state
+const flippedBoardSquares = computed(() => {
+  if (!gameStore.config.flipped) {
+    return boardSquares.value
+  }
+
+  // When flipped, we need to return squares in reverse order
+  // This makes white pieces appear at the top and black at the bottom
+  return [...boardSquares.value].reverse()
+})
+
+// Function to get piece grid position according to the board state
+function getPieceGridPosition(square: Square) {
+  const file = square.charAt(0)
+  const rank = square.charAt(1)
+
+  // Calculate 1-based grid positions
+  let fileIndex = 'abcdefgh'.indexOf(file) + 1
+  let rankIndex = '87654321'.indexOf(rank) + 1
+
+  // When the board is flipped, we need to adjust coordinates
+  if (gameStore.config.flipped) {
+    fileIndex = 9 - fileIndex
+    rankIndex = 9 - rankIndex
+  }
+
+  return {
+    gridColumn: fileIndex,
+    gridRow: rankIndex,
+  }
+}
 
 // Modified getSquareColor function that takes flipped state into account
 function getSquareColor(file: string, rank: string, flipped: boolean): SquareColor {
@@ -118,18 +154,7 @@ onMounted(() => {
   overflow: hidden;
 }
 
-/* Add styles for flipped board */
-.board-flipped {
-  transform: rotate(180deg);
-}
-
-.board-flipped :deep(.chess-piece) {
-  transform: rotate(180deg);
-}
-
-.board-flipped :deep(.chess-piece:hover) {
-  transform: rotate(180deg) scale(1.1);
-}
+/* No need for board flipping styles as we handle it differently now */
 
 .pieces-container {
   position: absolute;
@@ -144,17 +169,13 @@ onMounted(() => {
   z-index: 10;
 }
 
-.pieces-container > :deep(*) {
+.piece-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
   height: 100%;
-}
-
-.pieces-container :deep(.chess-piece) {
   pointer-events: auto;
-  transition: transform 0.2s ease;
 }
 
 /* Validation tooltip */

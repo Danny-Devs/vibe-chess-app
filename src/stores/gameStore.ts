@@ -395,6 +395,14 @@ export const useGameStore = defineStore('game', () => {
       flipped: !config.value.flipped,
       squaresFlipped: !config.value.squaresFlipped,
     }
+
+    // When flipping the board, we don't change the internal pieces representation
+    // The UI will handle the rendering of the flipped board
+    // This approach keeps the game state consistent and simpler to manage
+
+    // We do need to clear any selection to avoid confusion
+    selectedPieceId.value = null
+    availableMoves.value = []
   }
 
   return {
