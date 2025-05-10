@@ -138,6 +138,12 @@ export function useChessRules(pieces: Piece[]) {
       if (captureSquare && hasEnemyPiece(captureSquare, piece.color)) {
         const capturedPiece = getPieceAtSquare(captureSquare)
 
+        // Add debug logging for pawn captures
+        console.log(
+          `CAPTURE DETECTED - Pawn at ${piece.square} can capture on ${captureSquare}`,
+          capturedPiece,
+        )
+
         // Check for promotion
         if (captureSquare.charAt(1) === promotionRank) {
           addPawnPromotionMoves(piece, piece.square, captureSquare, moves, capturedPiece)

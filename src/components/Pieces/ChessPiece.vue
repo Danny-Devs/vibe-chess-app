@@ -8,7 +8,8 @@
       { 'is-dragging': isDragging },
     ]"
     :data-piece-id="piece.id"
-    @click.stop="$emit('click', $event)"
+    :data-piece-square="piece.square"
+    @click.stop="handleClick($event)"
     @mousedown.stop="$emit('mousedown', $event)"
   >
     {{ getPieceLetter(piece.type) }}
@@ -19,6 +20,7 @@
 import { computed } from 'vue'
 import type { Piece, PieceType } from '../../types'
 import { FILES, RANKS } from '../../constants/boardConfig'
+import { useGameStore } from '../../stores/gameStore'
 
 interface Props {
   piece: Piece
@@ -34,6 +36,33 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 defineEmits(['click', 'mousedown'])
+
+const gameStore = useGameStore()
+
+function handleClick(event: MouseEvent) {
+  // Emit click event with piece data
+  const { piece } = props
+  const isCurrentPlayerPiece = piece.color === gameStore.currentTurn
+
+  if (isCurrentPlayerPiece) {
+    // For own pieces, use the standard selectPiece
+    gameStore.selectPiece(piece.id)
+  } else {
+    // For enemy pieces, we need to check if a piece is already selected that can capture this one
+    const selectedPieceId = gameStore.selectedPieceId
+    if (selectedPieceId) {
+      const selectedPiece = gameStore.pieces.find((p) => p.id === selectedPieceId)
+      if (selectedPiece) {
+        // Try to perform the capture directly
+        console.log('Attempting to capture from ChessPiece click:', {
+          from: selectedPiece.square,
+          to: piece.square,
+        })
+        gameStore.movePiece(selectedPiece.square, piece.square)
+      }
+    }
+  }
+}
 
 // Get the letter representation of each piece type
 const getPieceLetter = (type: PieceType): string => {

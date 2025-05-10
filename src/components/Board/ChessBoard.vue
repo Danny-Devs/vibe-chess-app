@@ -16,7 +16,7 @@
         :showCoordinates="showCoordinates"
         :isValidMoveTarget="isValidMoveForSquare(square)"
         :isDropTarget="isCurrentDropTarget(square)"
-        @click="gameStore.handleSquareClick(square)"
+        @click="handleSquareClick(square)"
         ref="squareRefs"
       />
 
@@ -37,7 +37,6 @@
             :isSelected="piece.id === gameStore.selectedPieceId"
             :isInCheck="piece.id === gameStore.check.kingId"
             :isDragging="piece.id === draggedPieceId"
-            @click.stop="gameStore.selectPiece(piece.id, $event)"
             @mousedown.stop="startDrag(piece, $event)"
           />
         </div>
@@ -58,6 +57,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Add the debug panel completely outside -->
+  <DebugPanel v-if="showDebugPanel" />
 </template>
 
 <script setup lang="ts">
@@ -67,13 +69,16 @@ import ChessSquare from '../Square/ChessSquare.vue'
 import { ChessPiece } from '../Pieces'
 import { useBoardUtils } from '../../composables/useBoardUtils'
 import { useGameStore } from '../../stores/gameStore'
+import DebugPanel from './DebugPanel.vue'
 
 interface Props {
   showCoordinates?: boolean
+  showDebugPanel?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showCoordinates: true,
+  showDebugPanel: true, // Show debug panel by default
 })
 
 const { generateBoardSquares, getSquareColor } = useBoardUtils()
@@ -274,6 +279,68 @@ watch(
     }
   },
 )
+
+// Add our new direct handler function
+function handleSquareClick(square: Square) {
+  // Get the game store's current state
+  const selectedPieceId = gameStore.selectedPieceId
+  const selectedPiece = selectedPieceId
+    ? gameStore.pieces.find((p) => p.id === selectedPieceId)
+    : null
+  const targetPiece = gameStore.pieces.find((p) => p.square === square)
+
+  console.log('DIRECT HANDLER:', { square, selectedPieceId, targetPiece })
+
+  // CASE 1: No piece selected - select piece of correct color
+  if (!selectedPieceId) {
+    if (targetPiece && targetPiece.color === gameStore.currentTurn) {
+      console.log('Selecting piece:', targetPiece)
+      gameStore.selectPiece(targetPiece.id)
+    }
+    return
+  }
+
+  // CASE 2: Own piece selected, clicking same piece - deselect
+  if (selectedPiece && selectedPiece.square === square) {
+    console.log('Deselecting piece')
+    gameStore.selectPiece(null)
+    return
+  }
+
+  // CASE 3: Own piece selected, clicking enemy piece - try capture
+  if (selectedPiece && targetPiece && targetPiece.color !== gameStore.currentTurn) {
+    console.log('Attempting to capture:', { from: selectedPiece.square, to: square })
+
+    // Check if this is a valid move target
+    if (gameStore.isValidMoveTarget(square)) {
+      console.log('Valid capture move detected')
+      // Use the standard movePiece function which handles captures properly
+      gameStore.movePiece(selectedPiece.square, square)
+    } else {
+      console.log('Invalid capture attempt - not a valid move target')
+      // Optionally provide feedback about invalid capture
+    }
+    return
+  }
+
+  // CASE 4: Selected own piece, clicking another own piece - select that instead
+  if (targetPiece && targetPiece.color === gameStore.currentTurn) {
+    console.log('Selecting different piece:', targetPiece)
+    gameStore.selectPiece(targetPiece.id)
+    return
+  }
+
+  // CASE 5: Selected own piece, clicking empty square - try move
+  if (selectedPiece && !targetPiece && gameStore.isValidMoveTarget(square)) {
+    console.log('Moving piece to empty square')
+    gameStore.movePiece(selectedPiece.square, square)
+    return
+  }
+
+  // If we get here, it's likely an invalid action - deselect
+  console.log('Invalid action, deselecting')
+  gameStore.selectPiece(null)
+}
 </script>
 
 <style scoped>

@@ -14,6 +14,13 @@ import { INITIAL_GAME_CONFIG, STATUS_MESSAGES } from '../constants/gameConfig'
 import { VALIDATION_MESSAGES } from '../constants/validationConfig'
 import { useChessRules } from '../composables/useChessRules'
 import { generateMoveNotation } from '../utils/notationUtils'
+import {
+  CHECKMATE_POSITION,
+  STALEMATE_POSITION,
+  ONE_MOVE_CHECKMATE,
+  ALMOST_STALEMATE,
+  CAPTURE_TEST_POSITION,
+} from '../constants/debugPositions'
 
 export const useGameStore = defineStore('game', () => {
   // Game state
@@ -89,33 +96,96 @@ export const useGameStore = defineStore('game', () => {
     // Clear validation feedback first
     clearValidationFeedback()
 
-    // Can only select pieces of the current player's color during active game
-    if (pieceId !== null && status.value === 'active') {
-      const piece = pieces.value.find((p) => p.id === pieceId)
-      if (piece && piece.color === currentTurn.value) {
-        selectedPieceId.value = pieceId
-        // Generate available moves for the selected piece
-        availableMoves.value = generateMovesForPiece(piece)
-      } else {
-        // If piece is null or not the current player's color, clear selection
-        selectedPieceId.value = null
-        availableMoves.value = []
-      }
-    } else {
-      // Clear selection
+    // If no piece is selected, clear the state
+    if (pieceId === null) {
       selectedPieceId.value = null
       availableMoves.value = []
+      return
     }
+
+    // Only proceed if the game is active
+    if (status.value !== 'active') {
+      return
+    }
+
+    // Find the piece
+    const piece = pieces.value.find((p) => p.id === pieceId)
+
+    // Check if it's the player's turn
+    if (!piece || piece.color !== currentTurn.value) {
+      selectedPieceId.value = null
+      availableMoves.value = []
+      return
+    }
+
+    // Select the piece
+    selectedPieceId.value = pieceId
+
+    // Generate available moves for the selected piece
+    const rules = getRules()
+    const moves = rules.generateMovesForPiece(piece)
+
+    // Log moves for debugging
+    console.log(
+      `Generated moves for ${piece.type} at ${piece.square}:`,
+      moves.map((m) => ({
+        to: m.to,
+        type: m.type,
+        capturedPiece: m.capturedPiece
+          ? `${m.capturedPiece.color} ${m.capturedPiece.type}`
+          : 'none',
+      })),
+    )
+
+    // Specifically log capture moves if any
+    const captureMoves = moves.filter((m) => m.type === 'capture')
+    if (captureMoves.length > 0) {
+      console.log(
+        'CAPTURE MOVES AVAILABLE:',
+        captureMoves.map((m) => ({
+          to: m.to,
+          capturedPiece: m.capturedPiece
+            ? `${m.capturedPiece.color} ${m.capturedPiece.type}`
+            : 'none',
+        })),
+      )
+    }
+
+    availableMoves.value = moves
   }
 
   function isValidMoveTarget(square: Square): boolean {
+    // If no piece is selected, no valid targets
     if (!selectedPieceId.value) return false
 
+    // Find the selected piece
     const selectedPiece = pieces.value.find((p) => p.id === selectedPieceId.value)
     if (!selectedPiece) return false
 
     // Check if this square is in the available moves for the selected piece
-    const isValid = availableMoves.value.some((move) => move.to === square)
+    const validMove = availableMoves.value.find((move) => move.to === square)
+    const isValid = !!validMove
+
+    // Debug logging
+    console.log(`isValidMoveTarget check for ${square}:`, {
+      pieceId: selectedPieceId.value,
+      from: selectedPiece.square,
+      availableMoves: availableMoves.value.map((m) => m.to),
+      validMove,
+      isValid,
+    })
+
+    // Log additional info if there's a piece at the target
+    const pieceAtTarget = getPieceAtSquare(square)
+    if (pieceAtTarget) {
+      const isEnemyPiece = pieceAtTarget.color !== currentTurn.value
+      console.log(
+        `Target ${square} has ${isEnemyPiece ? 'enemy' : 'friendly'} ${pieceAtTarget.type}`,
+        {
+          validCapture: isValid && isEnemyPiece,
+        },
+      )
+    }
 
     return isValid
   }
@@ -381,38 +451,110 @@ export const useGameStore = defineStore('game', () => {
     // If game is not active, do nothing
     if (status.value !== 'active') return
 
-    // If a piece is already selected
+    // Get pieces at source and target
+    const targetPiece = getPieceAtSquare(square)
+
+    // If we have a selected piece
     if (selectedPieceId.value) {
       const selectedPiece = pieces.value.find((p) => p.id === selectedPieceId.value)
-
-      // If clicking on the same piece, deselect it
-      if (selectedPiece && selectedPiece.square === square) {
-        selectPiece(null)
+      if (!selectedPiece) {
+        // Invalid selection state, reset
+        selectedPieceId.value = null
         return
       }
 
-      // If clicking on a valid target square, move the piece
-      if (selectedPiece && isValidMoveTarget(square)) {
+      // Clicking the same piece again deselects it
+      if (selectedPiece.square === square) {
+        selectedPieceId.value = null
+        return
+      }
+
+      // Case: Attempting to capture an enemy piece
+      if (targetPiece && targetPiece.color !== currentTurn.value) {
+        console.log('Store: Attempting to capture:', { from: selectedPiece.square, to: square })
+
+        // Check if this is a valid move target
+        if (isValidMoveTarget(square)) {
+          console.log('Store: Valid capture move detected')
+          // Use the movePiece function which handles captures
+          movePiece(selectedPiece.square, square)
+        } else {
+          console.log('Store: Invalid capture attempt - not a valid move target')
+        }
+        return
+      }
+
+      // If clicking another own piece, select it
+      if (targetPiece && targetPiece.color === currentTurn.value) {
+        selectPiece(targetPiece.id)
+        return
+      }
+
+      // If clicking an empty square and it's a valid move target
+      if (!targetPiece && isValidMoveTarget(square)) {
         movePiece(selectedPiece.square, square)
         return
       }
 
-      // If clicking on another piece of the same color, select it instead
-      const clickedPiece = getPieceAtSquare(square)
-      if (clickedPiece && clickedPiece.color === currentTurn.value) {
-        selectPiece(clickedPiece.id)
-        return
-      }
-
-      // Otherwise, deselect the current piece
-      selectPiece(null)
+      // Otherwise deselect
+      selectedPieceId.value = null
     } else {
-      // If no piece is selected, try to select the piece at the clicked square
-      const clickedPiece = getPieceAtSquare(square)
-      if (clickedPiece && clickedPiece.color === currentTurn.value) {
-        selectPiece(clickedPiece.id)
+      // No piece selected, try to select one if it's the player's piece
+      if (targetPiece && targetPiece.color === currentTurn.value) {
+        selectPiece(targetPiece.id)
       }
     }
+  }
+
+  // Debug functions for testing game states
+  function loadDebugPosition(
+    positionType: 'checkmate' | 'stalemate' | 'oneMove' | 'almostStalemate' | 'captureTest',
+  ) {
+    // Make sure the game is active first
+    if (status.value === 'idle') {
+      status.value = 'active'
+    }
+
+    // Load the requested position
+    switch (positionType) {
+      case 'checkmate':
+        pieces.value = [...CHECKMATE_POSITION]
+        currentTurn.value = 'black' // Black is in checkmate
+        break
+      case 'stalemate':
+        pieces.value = [...STALEMATE_POSITION]
+        currentTurn.value = 'black' // Black is in stalemate
+        break
+      case 'oneMove':
+        pieces.value = [...ONE_MOVE_CHECKMATE]
+        currentTurn.value = 'white' // White to move and deliver checkmate
+        break
+      case 'almostStalemate':
+        pieces.value = [...ALMOST_STALEMATE]
+        currentTurn.value = 'white' // White to move to cause stalemate
+        break
+      case 'captureTest':
+        pieces.value = [...CAPTURE_TEST_POSITION]
+        currentTurn.value = 'white' // White to move and capture
+        break
+    }
+
+    // Reset other game state
+    selectedPieceId.value = null
+    availableMoves.value = []
+
+    // Update game status
+    updateGameStatus()
+
+    // Reset history with this as the starting position
+    history.value = {
+      moves: [],
+      positions: [[...pieces.value]],
+      currentIndex: 0,
+    }
+
+    // Clear validation feedback
+    clearValidationFeedback()
   }
 
   return {
@@ -446,5 +588,11 @@ export const useGameStore = defineStore('game', () => {
     handleRedoMove,
     handleSquareClick,
     clearValidationFeedback,
+
+    // Add this helper function to the exported object
+    getRules,
+
+    // Debug functions
+    loadDebugPosition,
   }
 })
