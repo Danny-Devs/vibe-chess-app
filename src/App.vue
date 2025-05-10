@@ -46,13 +46,13 @@ const handleStartNewGame = () => {
           <div class="move-history">
             <h3>Move History</h3>
             <div class="history-container">
-              <div v-if="gameStore.history.moves.length === 0" class="history-placeholder">
+              <div v-if="gameStore.activeMoves.length === 0" class="history-placeholder">
                 No moves yet
               </div>
               <div v-else class="history-moves">
                 <!-- Group moves by turn number (one white move + one black move per line) -->
                 <div
-                  v-for="turnNumber in Math.ceil(gameStore.history.moves.length / 2)"
+                  v-for="turnNumber in Math.ceil(gameStore.activeMoves.length / 2)"
                   :key="turnNumber"
                   class="history-turn"
                 >
@@ -62,15 +62,15 @@ const handleStartNewGame = () => {
                   <div class="move-pair">
                     <!-- White's move (always exists) -->
                     <div class="move-text white-move">
-                      {{ gameStore.history.moves[(turnNumber - 1) * 2].notation }}
+                      {{ gameStore.activeMoves[(turnNumber - 1) * 2].notation }}
                     </div>
 
                     <!-- Black's move (may not exist in the last turn) -->
                     <div
-                      v-if="(turnNumber - 1) * 2 + 1 < gameStore.history.moves.length"
+                      v-if="(turnNumber - 1) * 2 + 1 < gameStore.activeMoves.length"
                       class="move-text black-move"
                     >
-                      {{ gameStore.history.moves[(turnNumber - 1) * 2 + 1].notation }}
+                      {{ gameStore.activeMoves[(turnNumber - 1) * 2 + 1].notation }}
                     </div>
                     <div v-else class="move-text placeholder"></div>
                   </div>

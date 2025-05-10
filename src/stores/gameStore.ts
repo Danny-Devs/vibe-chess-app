@@ -13,6 +13,7 @@ import { INITIAL_POSITION } from '../constants/pieceConfig'
 import { INITIAL_GAME_CONFIG, STATUS_MESSAGES } from '../constants/gameConfig'
 import { VALIDATION_MESSAGES } from '../constants/validationConfig'
 import { useChessRules } from '../composables/useChessRules'
+import { generateMoveNotation } from '../utils/notationUtils'
 
 export const useGameStore = defineStore('game', () => {
   // Game state
@@ -47,6 +48,9 @@ export const useGameStore = defineStore('game', () => {
   const canUndo = computed(() => history.value.currentIndex > 0)
   const canRedo = computed(() => history.value.currentIndex < history.value.positions.length - 1)
   const gameStarted = computed(() => status.value !== 'idle')
+  const activeMoves = computed(() => {
+    return history.value.moves.slice(0, history.value.currentIndex)
+  })
 
   // Helper functions
   function getRules() {
@@ -243,15 +247,21 @@ export const useGameStore = defineStore('game', () => {
     // Update the pieces
     pieces.value = [...newPieces]
 
+    // Switch turns
+    currentTurn.value = currentTurn.value === 'white' ? 'black' : 'white'
+
+    // Update game status to detect check/checkmate
+    updateGameStatus()
+
+    // Update notation with check/checkmate status
+    move.notation = generateMoveNotation(move, pieces.value, status.value)
+
     // Add to history (remove any future positions if we're redoing from a previous position)
     addMove(move, newPieces)
 
     // Clear selection
     selectedPieceId.value = null
     availableMoves.value = []
-
-    // Switch turns
-    currentTurn.value = currentTurn.value === 'white' ? 'black' : 'white'
   }
 
   function addMove(move: Move, newPosition: Piece[]) {
@@ -295,6 +305,9 @@ export const useGameStore = defineStore('game', () => {
 
   function handleRedoMove() {
     if (canRedo.value) {
+      // Get the move we're redoing
+      const move = history.value.moves[history.value.currentIndex]
+
       // Increase the current index
       history.value.currentIndex++
 
@@ -316,6 +329,11 @@ export const useGameStore = defineStore('game', () => {
 
       // Update game status
       updateGameStatus()
+
+      // Update the move notation to reflect the current game state (check/checkmate)
+      if (move) {
+        move.notation = generateMoveNotation(move, pieces.value, status.value)
+      }
     }
   }
 
@@ -425,6 +443,7 @@ export const useGameStore = defineStore('game', () => {
     canUndo,
     canRedo,
     gameStarted,
+    activeMoves,
 
     // Actions
     startNewGame,

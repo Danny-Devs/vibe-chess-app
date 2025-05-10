@@ -1,5 +1,14 @@
 import { computed } from 'vue'
-import type { Piece, PieceColor, PieceType, Square, Move, MoveType, Direction } from '../types'
+import type {
+  Piece,
+  PieceColor,
+  PieceType,
+  Square,
+  Move,
+  MoveType,
+  Direction,
+  GameStatus,
+} from '../types'
 import { DIRECTION_VECTORS } from '../constants/gameConfig'
 import { indicesToSquare, squareToIndices, generateMoveNotation } from '../utils/notationUtils'
 
