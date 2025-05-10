@@ -33,21 +33,21 @@ Update `src/types/index.ts` with the following additions:
 ```typescript
 // Existing types...
 
-export type PieceType = 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king';
-export type PieceColor = 'white' | 'black';
+export type PieceType = 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king'
+export type PieceColor = 'white' | 'black'
 
 export interface Piece {
-  id: string;
-  type: PieceType;
-  color: PieceColor;
-  square: Square;
-  hasMoved?: boolean;
+  id: string
+  type: PieceType
+  color: PieceColor
+  square: Square
+  hasMoved?: boolean
 }
 
 export interface GameState {
-  pieces: Piece[];
-  currentTurn: PieceColor;
-  selectedPieceId: string | null;
+  pieces: Piece[]
+  currentTurn: PieceColor
+  selectedPieceId: string | null
 }
 ```
 
@@ -56,10 +56,10 @@ export interface GameState {
 Create `src/constants/pieceConfig.ts`:
 
 ```typescript
-import type { PieceType, PieceColor, Piece, Square } from '../types';
+import type { PieceType, PieceColor, Piece, Square } from '../types'
 
 // Golden ratio for sacred geometry proportions
-export const GOLDEN_RATIO = 1.618;
+export const GOLDEN_RATIO = 1.618
 
 // Colors for the wireframe effect
 export const PIECE_COLORS = {
@@ -67,18 +67,18 @@ export const PIECE_COLORS = {
     primary: '#e6f0ff',
     secondary: '#99c2ff',
     outline: '#4d94ff',
-    glow: 'rgba(77, 148, 255, 0.5)'
+    glow: 'rgba(77, 148, 255, 0.5)',
   },
   black: {
     primary: '#1a1a2e',
     secondary: '#16213e',
     outline: '#0f3460',
-    glow: 'rgba(15, 52, 96, 0.5)'
-  }
-};
+    glow: 'rgba(15, 52, 96, 0.5)',
+  },
+}
 
 // Size constants for pieces
-export const PIECE_SCALE = 0.85; // Pieces take up 85% of square size
+export const PIECE_SCALE = 0.85 // Pieces take up 85% of square size
 
 // Initial board setup
 export const INITIAL_POSITION: Piece[] = [
@@ -99,7 +99,7 @@ export const INITIAL_POSITION: Piece[] = [
   { id: 'wp6', type: 'pawn', color: 'white', square: 'f2', hasMoved: false },
   { id: 'wp7', type: 'pawn', color: 'white', square: 'g2', hasMoved: false },
   { id: 'wp8', type: 'pawn', color: 'white', square: 'h2', hasMoved: false },
-  
+
   // Black pieces
   { id: 'br1', type: 'rook', color: 'black', square: 'a8', hasMoved: false },
   { id: 'bn1', type: 'knight', color: 'black', square: 'b8', hasMoved: false },
@@ -116,8 +116,8 @@ export const INITIAL_POSITION: Piece[] = [
   { id: 'bp5', type: 'pawn', color: 'black', square: 'e7', hasMoved: false },
   { id: 'bp6', type: 'pawn', color: 'black', square: 'f7', hasMoved: false },
   { id: 'bp7', type: 'pawn', color: 'black', square: 'g7', hasMoved: false },
-  { id: 'bp8', type: 'pawn', color: 'black', square: 'h7', hasMoved: false }
-];
+  { id: 'bp8', type: 'pawn', color: 'black', square: 'h7', hasMoved: false },
+]
 ```
 
 ### Piece Management Composable
@@ -125,54 +125,54 @@ export const INITIAL_POSITION: Piece[] = [
 Create `src/composables/usePieces.ts`:
 
 ```typescript
-import { ref, computed } from 'vue';
-import type { Piece, Square, PieceColor, PieceType } from '../types';
-import { INITIAL_POSITION } from '../constants/pieceConfig';
-import { useBoardUtils } from './useBoardUtils';
+import { ref, computed } from 'vue'
+import type { Piece, Square, PieceColor, PieceType } from '../types'
+import { INITIAL_POSITION } from '../constants/pieceConfig'
+import { useBoardUtils } from './useBoardUtils'
 
 export function usePieces() {
-  const { squareToCoordinates } = useBoardUtils();
-  const pieces = ref<Piece[]>([...INITIAL_POSITION]);
-  
+  const { squareToCoordinates } = useBoardUtils()
+  const pieces = ref<Piece[]>([...INITIAL_POSITION])
+
   // Find a piece at a specific square
   const getPieceAtSquare = (square: Square): Piece | undefined => {
-    return pieces.value.find(piece => piece.square === square);
-  };
-  
+    return pieces.value.find((piece) => piece.square === square)
+  }
+
   // Get all pieces of a specific color
   const getPiecesByColor = (color: PieceColor) => {
-    return computed(() => pieces.value.filter(piece => piece.color === color));
-  };
-  
+    return computed(() => pieces.value.filter((piece) => piece.color === color))
+  }
+
   // Get piece by ID
   const getPieceById = (id: string): Piece | undefined => {
-    return pieces.value.find(piece => piece.id === id);
-  };
-  
+    return pieces.value.find((piece) => piece.id === id)
+  }
+
   // Move a piece to a new square
   const movePiece = (pieceId: string, targetSquare: Square) => {
-    const pieceIndex = pieces.value.findIndex(p => p.id === pieceId);
+    const pieceIndex = pieces.value.findIndex((p) => p.id === pieceId)
     if (pieceIndex >= 0) {
       // Create a new array with the updated piece
       pieces.value = pieces.value.map((p, index) => {
         if (index === pieceIndex) {
-          return { ...p, square: targetSquare, hasMoved: true };
+          return { ...p, square: targetSquare, hasMoved: true }
         }
-        return p;
-      });
+        return p
+      })
     }
-  };
-  
+  }
+
   // Remove a piece from the board (when captured)
   const removePiece = (pieceId: string) => {
-    pieces.value = pieces.value.filter(p => p.id !== pieceId);
-  };
-  
+    pieces.value = pieces.value.filter((p) => p.id !== pieceId)
+  }
+
   // Reset pieces to initial position
   const resetPieces = () => {
-    pieces.value = [...INITIAL_POSITION];
-  };
-  
+    pieces.value = [...INITIAL_POSITION]
+  }
+
   return {
     pieces,
     getPieceAtSquare,
@@ -180,8 +180,8 @@ export function usePieces() {
     getPieceById,
     movePiece,
     removePiece,
-    resetPieces
-  };
+    resetPieces,
+  }
 }
 ```
 
@@ -191,7 +191,13 @@ Create `src/components/Pieces/PieceDefinitions.vue`:
 
 ```vue
 <template>
-  <svg style="position: absolute; width: 0; height: 0;" width="0" height="0" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    style="position: absolute; width: 0; height: 0;"
+    width="0"
+    height="0"
+    version="1.1"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <defs>
       <!-- Pawn -->
       <g id="piece-pawn">
@@ -218,9 +224,17 @@ Create `src/components/Pieces/PieceDefinitions.vue`:
         <path d="M8,11 L8,8 L26,8 L26,11" />
         <path d="M8,11 L8,30 L26,30 L26,11" />
         <path d="M9,8 L9,2 L11,2 L11,5 L14,5 L14,2 L20,2 L20,5 L23,5 L23,2 L25,2 L25,8" />
-        
+
         <!-- Sacred geometry pattern - Square grid overlay -->
-        <rect class="sacred-geometry" x="12" y="12" width="10" height="10" stroke-width="0.5" fill="none" />
+        <rect
+          class="sacred-geometry"
+          x="12"
+          y="12"
+          width="10"
+          height="10"
+          stroke-width="0.5"
+          fill="none"
+        />
         <line class="sacred-geometry" x1="12" y1="17" x2="22" y2="17" stroke-width="0.5" />
         <line class="sacred-geometry" x1="17" y1="12" x2="17" y2="22" stroke-width="0.5" />
       </g>
@@ -228,22 +242,46 @@ Create `src/components/Pieces/PieceDefinitions.vue`:
       <!-- Knight -->
       <g id="piece-knight">
         <path d="M 22,10 C 32.5,11 38.5,18 38,39 L 15,39 C 15,30 25,32.5 23,18" />
-        <path d="M 24,18 C 24.38,20.91 18.45,25.37 16,27 C 13,29 13.18,31.34 11,31 C 9.958,30.06 12.41,27.96 11,28 C 10,28 11.19,29.23 10,30 C 9,30 5.997,31 6,26 C 6,24 12,14 12,14 C 12,14 13.89,12.1 14,10.5 C 13.27,9.506 13.5,8.5 13.5,7.5 C 14.5,6.5 16.5,10 16.5,10 L 18.5,10 C 18.5,10 19.28,8.008 21,7 C 22,7 22,10 22,10" />
+        <path
+          d="M 24,18 C 24.38,20.91 18.45,25.37 16,27 C 13,29 13.18,31.34 11,31 C 9.958,30.06 12.41,27.96 11,28 C 10,28 11.19,29.23 10,30 C 9,30 5.997,31 6,26 C 6,24 12,14 12,14 C 12,14 13.89,12.1 14,10.5 C 13.27,9.506 13.5,8.5 13.5,7.5 C 14.5,6.5 16.5,10 16.5,10 L 18.5,10 C 18.5,10 19.28,8.008 21,7 C 22,7 22,10 22,10"
+        />
         <path d="M 9.5 25.5 A 0.5 0.5 0 1 1 8.5,25.5 A 0.5 0.5 0 1 1 9.5 25.5 z" />
-        <path d="M 15 15.5 A 0.5 1.5 0 1 1 14,15.5 A 0.5 1.5 0 1 1 15 15.5 z" transform="matrix(0.866,0.5,-0.5,0.866,9.693,-5.173)" />
-        
+        <path
+          d="M 15 15.5 A 0.5 1.5 0 1 1 14,15.5 A 0.5 1.5 0 1 1 15 15.5 z"
+          transform="matrix(0.866,0.5,-0.5,0.866,9.693,-5.173)"
+        />
+
         <!-- Sacred geometry pattern - Fibonacci spiral -->
-        <path class="sacred-geometry" d="M18,25 a4,4 0 0,1 -4,4 a4,4 0 0,1 -4,-4 a4,4 0 0,1 4,-4" fill="none" stroke-width="0.5" />
-        <path class="sacred-geometry" d="M14,21 a2.5,2.5 0 0,1 2.5,2.5" fill="none" stroke-width="0.5" />
-        <path class="sacred-geometry" d="M16.5,23.5 a1.5,1.5 0 0,1 -1.5,1.5" fill="none" stroke-width="0.5" />
+        <path
+          class="sacred-geometry"
+          d="M18,25 a4,4 0 0,1 -4,4 a4,4 0 0,1 -4,-4 a4,4 0 0,1 4,-4"
+          fill="none"
+          stroke-width="0.5"
+        />
+        <path
+          class="sacred-geometry"
+          d="M14,21 a2.5,2.5 0 0,1 2.5,2.5"
+          fill="none"
+          stroke-width="0.5"
+        />
+        <path
+          class="sacred-geometry"
+          d="M16.5,23.5 a1.5,1.5 0 0,1 -1.5,1.5"
+          fill="none"
+          stroke-width="0.5"
+        />
       </g>
 
       <!-- Bishop -->
       <g id="piece-bishop">
-        <path d="M 9,36 C 12.39,35.03 19.11,36.43 22.5,34 C 25.89,36.43 32.61,35.03 36,36 C 36,36 37.65,36.54 39,38 C 38.32,38.97 37.35,38.99 36,38.5 C 32.61,37.53 25.89,38.96 22.5,37.5 C 19.11,38.96 12.39,37.53 9,38.5 C 7.65,38.99 6.68,38.97 6,38 C 7.35,36.54 9,36 9,36 z" />
-        <path d="M 15,32 C 17.5,34.5 27.5,34.5 30,32 C 30.5,30.5 30,30 30,30 C 30,27.5 27.5,26 27.5,26 C 33,24.5 33.5,14.5 22.5,10.5 C 11.5,14.5 12,24.5 17.5,26 C 17.5,26 15,27.5 15,30 C 15,30 14.5,30.5 15,32 z" />
+        <path
+          d="M 9,36 C 12.39,35.03 19.11,36.43 22.5,34 C 25.89,36.43 32.61,35.03 36,36 C 36,36 37.65,36.54 39,38 C 38.32,38.97 37.35,38.99 36,38.5 C 32.61,37.53 25.89,38.96 22.5,37.5 C 19.11,38.96 12.39,37.53 9,38.5 C 7.65,38.99 6.68,38.97 6,38 C 7.35,36.54 9,36 9,36 z"
+        />
+        <path
+          d="M 15,32 C 17.5,34.5 27.5,34.5 30,32 C 30.5,30.5 30,30 30,30 C 30,27.5 27.5,26 27.5,26 C 33,24.5 33.5,14.5 22.5,10.5 C 11.5,14.5 12,24.5 17.5,26 C 17.5,26 15,27.5 15,30 C 15,30 14.5,30.5 15,32 z"
+        />
         <path d="M 25 8 A 2.5 2.5 0 1 1 20,8 A 2.5 2.5 0 1 1 25 8 z" />
-        
+
         <!-- Sacred geometry pattern - Vesica Piscis -->
         <circle class="sacred-geometry" cx="19.5" cy="18" r="5" fill="none" stroke-width="0.5" />
         <circle class="sacred-geometry" cx="25.5" cy="18" r="5" fill="none" stroke-width="0.5" />
@@ -251,11 +289,15 @@ Create `src/components/Pieces/PieceDefinitions.vue`:
 
       <!-- Queen -->
       <g id="piece-queen">
-        <path d="M 9,26 C 17.5,24.5 30,24.5 36,26 L 38.5,13.5 L 31,25 L 30.7,10.9 L 25.5,24.5 L 22.5,10 L 19.5,24.5 L 14.3,10.9 L 14,25 L 6.5,13.5 L 9,26 z" />
-        <path d="M 9,26 C 9,28 10.5,28 11.5,30 C 12.5,31.5 12.5,31 12,33.5 C 10.5,34.5 11,36 11,36 C 9.5,37.5 11,38.5 11,38.5 C 17.5,39.5 27.5,39.5 34,38.5 C 34,38.5 35.5,37.5 34,36 C 34,36 34.5,34.5 33,33.5 C 32.5,31 32.5,31.5 33.5,30 C 34.5,28 36,28 36,26 C 27.5,24.5 17.5,24.5 9,26 z" />
+        <path
+          d="M 9,26 C 17.5,24.5 30,24.5 36,26 L 38.5,13.5 L 31,25 L 30.7,10.9 L 25.5,24.5 L 22.5,10 L 19.5,24.5 L 14.3,10.9 L 14,25 L 6.5,13.5 L 9,26 z"
+        />
+        <path
+          d="M 9,26 C 9,28 10.5,28 11.5,30 C 12.5,31.5 12.5,31 12,33.5 C 10.5,34.5 11,36 11,36 C 9.5,37.5 11,38.5 11,38.5 C 17.5,39.5 27.5,39.5 34,38.5 C 34,38.5 35.5,37.5 34,36 C 34,36 34.5,34.5 33,33.5 C 32.5,31 32.5,31.5 33.5,30 C 34.5,28 36,28 36,26 C 27.5,24.5 17.5,24.5 9,26 z"
+        />
         <path d="M 11.5,30 C 15,29 30,29 33.5,30" />
         <path d="M 12,33.5 C 18,32.5 27,32.5 33,33.5" />
-        
+
         <!-- Sacred geometry pattern - Flower of Life -->
         <circle class="sacred-geometry" cx="22.5" cy="20" r="3" fill="none" stroke-width="0.5" />
         <circle class="sacred-geometry" cx="19" cy="18" r="3" fill="none" stroke-width="0.5" />
@@ -268,15 +310,24 @@ Create `src/components/Pieces/PieceDefinitions.vue`:
       <g id="piece-king">
         <path d="M 22.5,11.63 L 22.5,6" style="stroke-linecap:butt;" />
         <path d="M 20,8 L 25,8" style="stroke-linecap:butt;" />
-        <path d="M 22.5,25 C 22.5,25 27,17.5 25.5,14.5 C 25.5,14.5 24.5,12 22.5,12 C 20.5,12 19.5,14.5 19.5,14.5 C 18,17.5 22.5,25 22.5,25" />
-        <path d="M 12.5,37 C 18,40.5 27,40.5 32.5,37 L 32.5,30 C 32.5,30 41.5,25.5 38.5,19.5 C 34.5,13 25,16 22.5,23.5 L 22.5,27 L 22.5,23.5 C 20,16 10.5,13 6.5,19.5 C 3.5,25.5 12.5,30 12.5,30 L 12.5,37" />
+        <path
+          d="M 22.5,25 C 22.5,25 27,17.5 25.5,14.5 C 25.5,14.5 24.5,12 22.5,12 C 20.5,12 19.5,14.5 19.5,14.5 C 18,17.5 22.5,25 22.5,25"
+        />
+        <path
+          d="M 12.5,37 C 18,40.5 27,40.5 32.5,37 L 32.5,30 C 32.5,30 41.5,25.5 38.5,19.5 C 34.5,13 25,16 22.5,23.5 L 22.5,27 L 22.5,23.5 C 20,16 10.5,13 6.5,19.5 C 3.5,25.5 12.5,30 12.5,30 L 12.5,37"
+        />
         <path d="M 12.5,30 C 18,27 27,27 32.5,30" />
         <path d="M 12.5,33.5 C 18,30.5 27,30.5 32.5,33.5" />
         <path d="M 12.5,37 C 18,34 27,34 32.5,37" />
-        
+
         <!-- Sacred geometry pattern - Metatron's Cube -->
         <circle class="sacred-geometry" cx="22.5" cy="22" r="8" fill="none" stroke-width="0.5" />
-        <path class="sacred-geometry" d="M22.5,14 L22.5,30 M17.5,16 L27.5,28 M17.5,28 L27.5,16 M14.5,22 L30.5,22" stroke-width="0.5" fill="none" />
+        <path
+          class="sacred-geometry"
+          d="M22.5,14 L22.5,30 M17.5,16 L27.5,28 M17.5,28 L27.5,16 M14.5,22 L30.5,22"
+          stroke-width="0.5"
+          fill="none"
+        />
       </g>
     </defs>
   </svg>
@@ -301,13 +352,9 @@ Create `src/components/Pieces/ChessPiece.vue`:
 
 ```vue
 <template>
-  <div 
-    class="chess-piece" 
-    :class="[
-      `piece-${piece.type}`, 
-      `piece-${piece.color}`, 
-      { 'selected': isSelected }
-    ]"
+  <div
+    class="chess-piece"
+    :class="[`piece-${piece.type}`, `piece-${piece.color}`, { selected: isSelected }]"
     :style="pieceStyle"
     :data-piece-id="piece.id"
     @click="$emit('click')"
@@ -319,43 +366,43 @@ Create `src/components/Pieces/ChessPiece.vue`:
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { Piece } from '../../types';
-import { useBoardUtils } from '../../composables/useBoardUtils';
-import { PIECE_SCALE } from '../../constants/pieceConfig';
+import { computed } from 'vue'
+import type { Piece } from '../../types'
+import { useBoardUtils } from '../../composables/useBoardUtils'
+import { PIECE_SCALE } from '../../constants/pieceConfig'
 
 interface Props {
-  piece: Piece;
-  isSelected?: boolean;
-  boardFlipped?: boolean;
+  piece: Piece
+  isSelected?: boolean
+  boardFlipped?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
-  boardFlipped: false
-});
+  boardFlipped: false,
+})
 
-defineEmits(['click']);
+defineEmits(['click'])
 
-const { squareToCoordinates } = useBoardUtils();
+const { squareToCoordinates } = useBoardUtils()
 
 // Set the viewBox for the SVG pieces (standard chess piece dimensions)
-const viewBox = "0 0 45 45";
+const viewBox = '0 0 45 45'
 
 // Calculate position styling based on the piece's square and board orientation
 const pieceStyle = computed(() => {
-  const coordinates = squareToCoordinates(props.piece.square);
-  
+  const coordinates = squareToCoordinates(props.piece.square)
+
   // Adjust for flipped board if needed
-  const file = props.boardFlipped ? 7 - coordinates.file : coordinates.file;
-  const rank = props.boardFlipped ? 7 - coordinates.rank : coordinates.rank;
-  
+  const file = props.boardFlipped ? 7 - coordinates.file : coordinates.file
+  const rank = props.boardFlipped ? 7 - coordinates.rank : coordinates.rank
+
   return {
     transform: `translate(${file * 100}%, ${rank * 100}%)`,
     width: `${PIECE_SCALE * 100}%`,
     height: `${PIECE_SCALE * 100}%`,
-  };
-});
+  }
+})
 </script>
 
 <style scoped>
@@ -446,7 +493,7 @@ Update `src/components/Board/ChessBoard.vue` to include and position the chess p
         :color="getSquareColor(square[0], square[1])"
         :showCoordinates="showCoordinates"
       />
-      
+
       <!-- Chess pieces -->
       <div class="pieces-container">
         <ChessPiece
@@ -461,36 +508,36 @@ Update `src/components/Board/ChessBoard.vue` to include and position the chess p
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import ChessSquare from '../Square/ChessSquare.vue';
-import ChessPiece from '../Pieces/ChessPiece.vue';
-import PieceDefinitions from '../Pieces/PieceDefinitions.vue';
-import { useBoardUtils } from '../../composables/useBoardUtils';
-import { usePieces } from '../../composables/usePieces';
+import { ref } from 'vue'
+import ChessSquare from '../Square/ChessSquare.vue'
+import ChessPiece from '../Pieces/ChessPiece.vue'
+import PieceDefinitions from '../Pieces/PieceDefinitions.vue'
+import { useBoardUtils } from '../../composables/useBoardUtils'
+import { usePieces } from '../../composables/usePieces'
 
 interface Props {
-  showCoordinates?: boolean;
+  showCoordinates?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  showCoordinates: true
-});
+  showCoordinates: true,
+})
 
-const { getSquareColor, generateBoardSquares } = useBoardUtils();
-const boardSquares = generateBoardSquares;
+const { getSquareColor, generateBoardSquares } = useBoardUtils()
+const boardSquares = generateBoardSquares
 
 // Get the pieces for the board
-const { pieces } = usePieces();
-const selectedPieceId = ref<string | null>(null);
+const { pieces } = usePieces()
+const selectedPieceId = ref<string | null>(null)
 
 // To be used in future features
 const selectPiece = (pieceId: string) => {
-  selectedPieceId.value = pieceId;
-};
+  selectedPieceId.value = pieceId
+}
 
 const clearSelection = () => {
-  selectedPieceId.value = null;
-};
+  selectedPieceId.value = null
+}
 </script>
 
 <style scoped>
@@ -508,13 +555,13 @@ const clearSelection = () => {
 /* CSS Variables for pieces */
 :root {
   /* Existing variables... */
-  
+
   /* White pieces */
   --white-piece-primary: #e6f0ff;
   --white-piece-secondary: #99c2ff;
   --white-piece-outline: #4d94ff;
   --white-piece-glow: rgba(77, 148, 255, 0.5);
-  
+
   /* Black pieces */
   --black-piece-primary: #1a1a2e;
   --black-piece-secondary: #16213e;
@@ -534,23 +581,23 @@ Update `src/App.vue` to include the PieceDefinitions component:
     <header class="header">
       <h1>Sacred Geometry Chess</h1>
     </header>
-    
+
     <main class="main-content">
       <ChessBoard />
     </main>
-    
+
     <footer class="footer">
       <p>Digital Wireframe Chess - Version 0.1</p>
     </footer>
-    
+
     <!-- SVG Definitions for chess pieces -->
     <PieceDefinitions />
   </div>
 </template>
 
 <script setup lang="ts">
-import ChessBoard from './components/Board/ChessBoard.vue';
-import PieceDefinitions from './components/Pieces/PieceDefinitions.vue';
+import ChessBoard from './components/Board/ChessBoard.vue'
+import PieceDefinitions from './components/Pieces/PieceDefinitions.vue'
 </script>
 
 <!-- Existing styles... -->
@@ -578,10 +625,10 @@ import PieceDefinitions from './components/Pieces/PieceDefinitions.vue';
 Create a file `src/components/Pieces/__tests__/ChessPiece.spec.ts` with the following tests:
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { mount } from '@vue/test-utils';
-import ChessPiece from '../ChessPiece.vue';
-import type { Piece } from '../../../types';
+import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
+import ChessPiece from '../ChessPiece.vue'
+import type { Piece } from '../../../types'
 
 describe('ChessPiece', () => {
   it('renders the correct piece type and color', () => {
@@ -589,95 +636,95 @@ describe('ChessPiece', () => {
       id: 'wk',
       type: 'king',
       color: 'white',
-      square: 'e1'
-    };
-    
+      square: 'e1',
+    }
+
     const wrapper = mount(ChessPiece, {
       props: {
-        piece
+        piece,
       },
       global: {
         stubs: {
           // Stub the SVG reference since it relies on external SVG definitions
-          svg: true
-        }
-      }
-    });
-    
-    expect(wrapper.classes()).toContain('piece-king');
-    expect(wrapper.classes()).toContain('piece-white');
-  });
-  
+          svg: true,
+        },
+      },
+    })
+
+    expect(wrapper.classes()).toContain('piece-king')
+    expect(wrapper.classes()).toContain('piece-white')
+  })
+
   it('applies selected class when isSelected is true', () => {
     const piece: Piece = {
       id: 'wk',
       type: 'king',
       color: 'white',
-      square: 'e1'
-    };
-    
+      square: 'e1',
+    }
+
     const wrapper = mount(ChessPiece, {
       props: {
         piece,
-        isSelected: true
+        isSelected: true,
       },
       global: {
         stubs: {
-          svg: true
-        }
-      }
-    });
-    
-    expect(wrapper.classes()).toContain('selected');
-  });
-  
+          svg: true,
+        },
+      },
+    })
+
+    expect(wrapper.classes()).toContain('selected')
+  })
+
   it('sets the correct data-piece-id attribute', () => {
     const piece: Piece = {
       id: 'wk',
       type: 'king',
       color: 'white',
-      square: 'e1'
-    };
-    
+      square: 'e1',
+    }
+
     const wrapper = mount(ChessPiece, {
       props: {
-        piece
+        piece,
       },
       global: {
         stubs: {
-          svg: true
-        }
-      }
-    });
-    
-    expect(wrapper.attributes('data-piece-id')).toBe('wk');
-  });
-  
+          svg: true,
+        },
+      },
+    })
+
+    expect(wrapper.attributes('data-piece-id')).toBe('wk')
+  })
+
   it('calculates the correct position based on square', () => {
     const piece: Piece = {
       id: 'wk',
       type: 'king',
       color: 'white',
-      square: 'e1'
-    };
-    
+      square: 'e1',
+    }
+
     const wrapper = mount(ChessPiece, {
       props: {
-        piece
+        piece,
       },
       global: {
         stubs: {
-          svg: true
-        }
-      }
-    });
-    
+          svg: true,
+        },
+      },
+    })
+
     // e1 should translate to specific coordinates
     // This depends on the exact implementation of squareToCoordinates
-    const style = wrapper.attributes('style');
-    expect(style).toContain('transform');
-  });
-});
+    const style = wrapper.attributes('style')
+    expect(style).toContain('transform')
+  })
+})
 ```
 
 ## Challenges & Solutions

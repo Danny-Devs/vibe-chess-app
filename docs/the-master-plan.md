@@ -18,7 +18,7 @@ This project is an interactive chess game web application featuring a digital wi
 - **Build Tool**: Vite
 - **State Management**: Vue 3 Reactivity API (ref, reactive, computed)
 - **Typing**: TypeScript
-- **Styling**: Vue 3 scoped CSS with CSS Grid for the chessboard
+- **Styling**: Vue 3 scoped CSS with CSS Grid for the chessboard. I used a CSS reset from <https://www.joshwcomeau.com/css/custom-css-reset/> in the style.css file in src as a global css file but feel free to adjust the placement of it as needed.
 - **Animations**: Vue Transition components with GSAP for more complex animations
 - **Chess Logic**: Custom implementation with potential assistance from a lightweight chess engine library
 - **Storage**: Local Storage for saving games initially
@@ -40,6 +40,7 @@ The application will follow a component-based architecture with clean separation
 ## Design Principles
 
 1. **Visual Aesthetics**:
+
    - Digital wireframe style with sacred geometry patterns
    - Golden ratio proportions in piece design
    - Subtle background animations using geometric patterns
@@ -47,6 +48,7 @@ The application will follow a component-based architecture with clean separation
    - Consistent color scheme based on sacred geometry principles
 
 2. **Animation Philosophy**:
+
    - Smooth, fluid transitions for all interactions
    - Purposeful animations that enhance understanding
    - Subtle effects that don't distract from gameplay
@@ -61,6 +63,7 @@ The application will follow a component-based architecture with clean separation
 ## Feature Implementation Roadmap
 
 ### Phase 1: Core Chess Functionality
+
 1. **Chessboard Setup**: CSS Grid implementation with proper sizing and colors
 2. **Chess Pieces**: SVG creation with sacred geometry/digital wireframe aesthetic
 3. **Game State Management**: Core chess logic implementation
@@ -68,18 +71,21 @@ The application will follow a component-based architecture with clean separation
 5. **Basic Interactions**: Click/drag functionality for moving pieces
 
 ### Phase 2: Enhanced User Experience
+
 6. **Animation System**: Visual feedback and transitions
 7. **Keyboard Navigation**: Complete keyboard control implementation
 8. **Advanced Chess Rules**: Castling, en passant, pawn promotion, etc.
 9. **Game State Indicators**: Check, checkmate, draw conditions
 
 ### Phase 3: AI and Learning Features
+
 10. **Chess AI Implementation**: Basic AI opponent
 11. **Difficulty Settings**: Adjustable AI skill levels
 12. **Chess Tutor**: Interactive learning and advice system
 13. **Move Suggestions**: Help for players who need guidance
 
 ### Phase 4: User Features and Polish
+
 14. **Game Saving/Loading**: Local storage implementation
 15. **Simple Authentication**: Custom auth using browser APIs
 16. **Settings Panel**: User preferences and customization
@@ -117,11 +123,13 @@ The application will follow a component-based architecture with clean separation
 ## Key Technical Considerations
 
 1. **Performance Optimization**:
+
    - Efficient rendering of pieces and animations
    - Optimized AI calculations to prevent UI lag
    - Proper use of Vue's reactivity system and lifecycle hooks
 
 2. **Accessibility**:
+
    - Full keyboard navigation
    - Screen reader compatibility
    - Color contrast considerations
@@ -137,6 +145,7 @@ The application will follow a component-based architecture with clean separation
 ## Vue-Specific Patterns
 
 1. **Composition API Best Practices**:
+
    - Use `<script setup>` syntax for cleaner, more concise components
    - Leverage Vue 3 composables for reusable logic
    - Utilize `ref`, `reactive`, and `computed` appropriately
@@ -149,6 +158,7 @@ The application will follow a component-based architecture with clean separation
    - Suspense for async components
 
 ## Future Expansion Possibilities
+
 (Note: These are not part of the initial implementation)
 
 1. **Multiplayer**: Online play with friends
