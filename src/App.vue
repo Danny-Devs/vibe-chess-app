@@ -1,6 +1,20 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
+import { ref } from 'vue'
 import { ChessBoard } from './components/Board'
+import { useGameStore } from './stores/gameStore'
+
+// Use the game store from Pinia
+const gameStore = useGameStore()
+
+// Add a key to force component re-rendering when starting a new game
+const chessBoardKey = ref(0)
+
+// Create a function to handle starting a new game
+const handleStartNewGame = () => {
+  gameStore.startNewGame()
+  // Increment the key to force the ChessBoard component to re-render
+  chessBoardKey.value++
+}
 </script>
 
 <template>
@@ -10,7 +24,61 @@ import { ChessBoard } from './components/Board'
     </header>
 
     <main class="main-content">
-      <ChessBoard />
+      <div class="game-container">
+        <div class="side-panel left-panel">
+          <div class="game-status">{{ gameStore.statusMessage }}</div>
+          <div class="game-controls">
+            <button @click="handleStartNewGame">
+              {{ gameStore.gameStarted ? 'New Game' : 'Start Game' }}
+            </button>
+            <button @click="gameStore.handleUndoMove" :disabled="!gameStore.canUndo">Undo</button>
+            <button @click="gameStore.handleRedoMove" :disabled="!gameStore.canRedo">Redo</button>
+            <button @click="gameStore.toggleBoardOrientation">Flip Board</button>
+            <label class="control-option">
+              <input type="checkbox" v-model="gameStore.config.showAvailableMoves" />
+              Show Available Moves
+            </label>
+          </div>
+        </div>
+
+        <div class="board-container">
+          <ChessBoard :key="chessBoardKey" :showCoordinates="true" />
+        </div>
+
+        <div class="side-panel right-panel">
+          <div class="move-history">
+            <h3>Move History</h3>
+            <div class="history-container">
+              <div v-if="gameStore.history.moves.length === 0" class="history-placeholder">
+                No moves yet
+              </div>
+              <div v-else class="history-moves">
+                <!-- Group moves by pairs (white and black) -->
+                <div
+                  v-for="index in Math.ceil(gameStore.history.moves.length / 2)"
+                  :key="index"
+                  class="move-pair"
+                >
+                  <span class="move-number">{{ index }}.</span>
+                  <div class="move-content">
+                    <!-- White's move -->
+                    <span class="move-text white-move">
+                      {{ gameStore.history.moves[(index - 1) * 2]?.notation || '' }}
+                    </span>
+                    <!-- Black's move if exists -->
+                    <span
+                      v-if="(index - 1) * 2 + 1 < gameStore.history.moves.length"
+                      class="move-text black-move"
+                    >
+                      {{ gameStore.history.moves[(index - 1) * 2 + 1]?.notation || '' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
 
     <footer class="footer">
@@ -48,6 +116,7 @@ body {
   min-height: 100vh;
   max-width: 100vw;
   overflow-x: hidden;
+  background-color: var(--background-color);
 }
 
 .header {
@@ -56,6 +125,17 @@ body {
   background-color: var(--primary-color);
   color: white;
   width: 100%;
+}
+
+.game-status {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 0.5rem 0 1rem;
+  padding: 0.5rem;
+  color: var(--primary-color);
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
 }
 
 .main-content {
@@ -69,6 +149,140 @@ body {
   box-sizing: border-box;
 }
 
+.game-container {
+  display: flex;
+  width: 100%;
+  max-width: 1400px;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.side-panel {
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.left-panel {
+  justify-content: flex-start;
+}
+
+.right-panel {
+  justify-content: flex-start;
+}
+
+.board-container {
+  width: 650px;
+  height: 650px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.game-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.game-controls button {
+  padding: 0.75rem 1rem;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.game-controls button:hover {
+  background-color: #3a76d8;
+}
+
+.game-controls button:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+}
+
+.control-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.move-history {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.move-history h3 {
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.history-container {
+  flex: 1;
+  overflow-y: auto;
+  background-color: white;
+  border-radius: 4px;
+  padding: 0.5rem;
+  min-height: 300px;
+}
+
+.history-moves {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+
+.move-pair {
+  display: flex;
+  margin-bottom: 0.8rem;
+  align-items: flex-start;
+}
+
+.move-number {
+  font-weight: bold;
+  margin-right: 0.5rem;
+  color: #555;
+  min-width: 1.5rem;
+}
+
+.move-content {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.move-text {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.white-move {
+  color: var(--accent-color);
+}
+
+.black-move {
+  color: #333;
+}
+
+.history-placeholder {
+  color: #888;
+  text-align: center;
+  padding: 1rem;
+}
+
 .footer {
   padding: 1rem;
   text-align: center;
@@ -76,5 +290,63 @@ body {
   color: white;
   font-size: 0.8rem;
   width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .board-container {
+    width: 580px;
+    height: 580px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .game-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .side-panel {
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 1rem;
+  }
+
+  .board-container {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .game-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .right-panel {
+    order: 3;
+  }
+
+  .left-panel {
+    order: 1;
+  }
+
+  .board-container {
+    order: 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .board-container {
+    width: 100%;
+    max-width: 350px;
+  }
+
+  .game-controls button {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
 }
 </style>

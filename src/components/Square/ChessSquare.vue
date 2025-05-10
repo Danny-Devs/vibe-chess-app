@@ -1,37 +1,71 @@
 <template>
-  <div class="chess-square" :class="[color]" :data-square="square">
+  <div
+    class="chess-square"
+    :class="[
+      color,
+      { 'valid-move-target': isValidMoveTarget },
+      { 'has-feedback': hasFeedback },
+      feedbackClass,
+    ]"
+    :data-square="square"
+    @click="$emit('click')"
+  >
     <div v-if="showCoordinates && showRankLabel" class="coordinate rank-label">
       {{ square[1] }}
     </div>
     <div v-if="showCoordinates && showFileLabel" class="coordinate file-label">
       {{ square[0] }}
     </div>
+    <div v-if="hasFeedback" class="feedback-animation"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { SquareColor, Square } from '../../types'
+import type { SquareColor, Square, ValidationFeedbackType } from '../../types'
 import { FILES, RANKS } from '../../constants/boardConfig'
+import { useGameStore } from '../../stores/gameStore'
 
 interface Props {
   square: Square
   color: SquareColor
   showCoordinates?: boolean
+  isValidMoveTarget?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showCoordinates: true,
+  isValidMoveTarget: false,
 })
 
-// Show rank labels only on the a-file (leftmost column)
+defineEmits(['click'])
+
+const gameStore = useGameStore()
+
+const hasFeedback = computed(() => {
+  return (
+    gameStore.lastFeedbackSquare === props.square &&
+    gameStore.lastValidation.feedbackType !== 'none'
+  )
+})
+
+const feedbackClass = computed(() => {
+  if (hasFeedback.value) {
+    return `feedback-${gameStore.lastValidation.feedbackType}`
+  }
+  return ''
+})
+
+// Show rank labels only on the a-file (leftmost column) or h-file when flipped
 const showRankLabel = computed(() => {
-  return props.square[0] === 'a'
+  const fileToShow = gameStore.config.flipped ? 'h' : 'a'
+  return props.square[0] === fileToShow
 })
 
-// Show file labels only on the 1-rank (bottom row)
+// Show file labels only on the 1-rank (bottom row) or 8-rank when flipped
 const showFileLabel = computed(() => {
-  return props.square[1] === '1'
+  const rankToShow = gameStore.config.flipped ? '8' : '1'
+  return props.square[1] === rankToShow
 })
 </script>
 
@@ -43,6 +77,7 @@ const showFileLabel = computed(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
 }
 
 .light {
@@ -55,7 +90,7 @@ const showFileLabel = computed(() => {
 
 .coordinate {
   position: absolute;
-  font-size: 1rem;
+  font-size: 0.9rem;
   opacity: 0.9;
   pointer-events: none;
   color: rgba(0, 0, 0, 0.8);
@@ -77,5 +112,114 @@ const showFileLabel = computed(() => {
 /* Improve contrast for dark squares */
 .dark .coordinate {
   color: rgba(255, 255, 255, 0.95);
+}
+
+.valid-move-target {
+  position: relative;
+}
+
+.valid-move-target::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20%;
+  height: 20%;
+  background-color: rgba(75, 175, 80, 0.6);
+  border-radius: 50%;
+  z-index: 5;
+}
+
+/* Feedback styles */
+.has-feedback {
+  position: relative;
+}
+
+.feedback-animation {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.feedback-success .feedback-animation {
+  background-color: rgba(100, 255, 100, 0.3);
+  animation: pulse-success 0.5s ease-in-out;
+}
+
+.feedback-error .feedback-animation {
+  background-color: rgba(255, 100, 100, 0.3);
+  animation: shake 0.4s ease-in-out;
+}
+
+.feedback-warning .feedback-animation {
+  background-color: rgba(255, 200, 100, 0.3);
+  animation: pulse-warning 0.5s ease-in-out;
+}
+
+.feedback-info .feedback-animation {
+  background-color: rgba(100, 200, 255, 0.3);
+  animation: pulse-info 0.5s ease-in-out;
+}
+
+@keyframes pulse-success {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-warning {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-info {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-5px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 </style>
