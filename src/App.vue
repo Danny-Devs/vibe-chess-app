@@ -27,6 +27,22 @@ const handleStartNewGame = () => {
       <div class="game-container">
         <div class="side-panel left-panel">
           <div class="game-status">{{ gameStore.statusMessage }}</div>
+
+          <!-- Add turn indicator -->
+          <div
+            v-if="gameStore.gameStarted"
+            class="turn-indicator"
+            :class="{
+              'white-turn': gameStore.whoseTurn === 'white',
+              'black-turn': gameStore.whoseTurn === 'black',
+            }"
+          >
+            <div class="turn-piece"></div>
+            <div class="turn-text">
+              {{ gameStore.whoseTurn === 'white' ? 'White' : 'Black' }}'s Turn
+            </div>
+          </div>
+
           <div class="game-controls">
             <button @click="handleStartNewGame">New Game</button>
             <button @click="gameStore.handleUndoMove" :disabled="!gameStore.canUndo">Undo</button>
@@ -366,4 +382,53 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 } */
+
+.turn-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  margin: 0.5rem 0 1rem;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 4px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.turn-piece {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.white-turn .turn-piece {
+  background-color: #fff;
+  border: 2px solid #333;
+}
+
+.black-turn .turn-piece {
+  background-color: #333;
+  border: 2px solid #333;
+}
+
+.white-turn {
+  border-left: 4px solid var(--accent-color);
+}
+
+.black-turn {
+  border-left: 4px solid #333;
+}
+
+.turn-text {
+  font-size: 1.1rem;
+}
+
+.white-turn .turn-text {
+  color: var(--accent-color);
+}
+
+.black-turn .turn-text {
+  color: #333;
+}
 </style>
